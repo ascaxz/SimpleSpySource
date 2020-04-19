@@ -27,6 +27,7 @@ local scrollingFrame
 local textFrame
 local lineNumbersFrame
 local lines = {}
+local text = {}
 
 --- Contents of the table- array of char objects
 local tableContents = {}
@@ -165,42 +166,63 @@ function render()
 
     for i = 1, #tableContents do
         local v = tableContents[i]
-        local textBox = Instance.new("TextLabel")
-        local size = TextService:GetTextSize(v.Char, 14, Enum.Font.Arial, Vector2.new(math.huge, math.huge))
-        local lineSizeX = 0
+        -- local textBox = Instance.new("TextLabel")
+        -- local size = TextService:GetTextSize(v.Char, 14, Enum.Font.Arial, Vector2.new(math.huge, math.huge))
+        -- local lineSizeX = 0
+        -- if not lines[v.Line] then
+        --     lines[v.Line] = {}
+        -- end
+        -- if v.Char == "\n" then
+        --     textBox.Text = ""
+        -- elseif v.Char:match("\t") then
+        --     v.Char = "\t____"
+        --     textBox.Text = "\t____"
+        --     textBox.TextTransparency = 1
+        -- elseif v.Char:match(" ") then
+        --     v.Char = " |"
+        --     textBox.Text = " -"
+        --     textBox.TextTransparency = 1
+        -- else
+        --     textBox.Text = v.Char
+        -- end
+        -- for _, c in pairs(lines[v.Line]) do
+        --     lineSizeX = lineSizeX + TextService:GetTextSize(c.Char, 14, Enum.Font.Arial, Vector2.new(math.huge, math.huge)).X
+        -- end
+        -- textBox.TextColor3 = v.Color
+        -- textBox.Size = UDim2.new(0, size.X, 0, size.Y)
+        -- textBox.TextXAlignment = Enum.TextXAlignment.Left
+        -- textBox.TextYAlignment = Enum.TextYAlignment.Top
+        -- textBox.Position = UDim2.new(0, lineSizeX, 0, v.Line * lineSpace - lineSpace / 2)
+        -- textBox.BackgroundTransparency = 1
         if not lines[v.Line] then
             lines[v.Line] = {}
         end
-        if v.Char == "\n" then
-            textBox.Text = ""
-        elseif v.Char:match("\t") then
-            v.Char = "\t____"
-            textBox.Text = "\t____"
-            textBox.TextTransparency = 1
-        elseif v.Char:match(" ") then
-            v.Char = " |"
-            textBox.Text = " -"
-            textBox.TextTransparency = 1
-        else
-            textBox.Text = v.Char
-        end
-        for _, c in pairs(lines[v.Line]) do
-            lineSizeX = lineSizeX + TextService:GetTextSize(c.Char, 14, Enum.Font.Arial, Vector2.new(math.huge, math.huge)).X
-        end
-        textBox.TextColor3 = v.Color
-        textBox.Size = UDim2.new(0, size.X, 0, size.Y)
-        textBox.TextXAlignment = Enum.TextXAlignment.Left
-        textBox.TextYAlignment = Enum.TextYAlignment.Top
-        textBox.Position = UDim2.new(0, lineSizeX, 0, v.Line * lineSpace - lineSpace / 2)
-        textBox.BackgroundTransparency = 1
-        if not lines[v.Line] then
-            lines[v.Line] = {}
-        end
-        v.TextBox = textBox
+        -- v.TextBox = textBox
         table.insert(lines[v.Line], v)
-        textBox.Parent = textFrame
+        -- textBox.Parent = textFrame
     end
     for i = 1, #lines do
+        if #lines[i] > 0 then
+            local lineText = Highlight:getLine(i)
+            local formatTable = {}
+            local textBox = Instance.new("TextLabel")
+            local highlightGradient = Instance.new("UIGradient")
+            textBox.Text = lineText
+            textBox.Position = UDim2.new(0, 0, 0, i * lineSpace - lineSpace / 2)
+            textBox.TextXAlignment = Enum.TextXAlignment.Left
+            textBox.TextYAlignment = Enum.TextYAlignment.Top
+            textBox.Font = Enum.Font.Arial
+            for k, v in pairs(lines[i]) do
+                local charStart = TextService:GetTextSize(lineText:sub(0, k - 1), 14, Enum.Font.Arial, Vector2.new(math.huge, math.huge)).X
+                local charEnd = TextService:GetTextSize(v.Char, 14, Enum.Font.Arial, Vector2.new(math.huge, math.huge)).X + charStart
+                table.insert(formatTable, ColorSequenceKeypoint.new(charStart, v.Color))
+                table.insert(formatTable, ColorSequenceKeypoint.new(charEnd, v.Color))
+            end
+            highlightGradient.Color = formatTable
+            highlightGradient.Parent = textBox
+            textBox.Parent = textFrame
+        end
+
         local lineNumber = Instance.new("TextLabel")
         lineNumber.Text = i
         lineNumber.Size = UDim2.new(1, 0, 0, lineSpace)
@@ -209,6 +231,8 @@ function render()
         lineNumber.Position = UDim2.new(0, 0, 0, i * lineSpace - lineSpace / 2)
         lineNumber.BackgroundTransparency = 1
         lineNumber.Parent = lineNumbersFrame
+
+        game:GetService("RunService").RenderStepped:Wait()
     end
 
     updateZIndex()
