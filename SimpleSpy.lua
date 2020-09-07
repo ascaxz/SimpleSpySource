@@ -46,12 +46,20 @@ local description = Instance.new("TextLabel")
 local code = Instance.new("Frame")
 local codebox = Highlight.new(code)
 
-syn.protect_gui(ScreenguiS)
+function parent(a)
+    if PROTOSMASHER_LOADED ~= nil then
+        a.Parent = get_hidden_gui()
+    else
+        syn.protect_gui(a)
+        a.Parent = game:GetService("CoreGui")
+    end
+end
+        
 
 --Properties:
 
 ScreenguiS.Name = "ScreenguiS"
-ScreenguiS.Parent = CoreGui
+parent(ScreenguiS)
 ScreenguiS.Enabled = false
 ScreenguiS.DisplayOrder = 999999998
 
@@ -1263,7 +1271,7 @@ function toggleSpy()
         if not original then
             original = gm.__namecall
             if not original then
-                rconsoleprint("SimpleSpy: namecall method not found!\n")
+                print("SimpleSpy: namecall method not found!\n")
                 onToggleButtonClick()
                 return
             end
@@ -1287,7 +1295,7 @@ end
 
 --- Handles the button creation things... Connected to `remoteHandlerEvent`
 function bindableHandler(type, ...)
-    syn.set_thread_identity(7)
+    set_thread_context(7)
     if type == "RemoteEvent" then
         newEvent(...)
     elseif type == "RemoteFunction" then
@@ -1336,8 +1344,8 @@ if not _G.SimpleSpyExecuted then
     if succeeded then
         _G.SimpleSpyExecuted = true
     else
-        rconsoleprint("A fatal error has occured, SimpleSpy was unable to launch properly.\nPlease DM this error message to @exx#9394:\n\n" .. tostring(err))
-        rconsolename = "SimpleSpy Error Console"
+        print("SimpleSpy Error Console")
+        print("A fatal error has occured, SimpleSpy was unable to launch properly.\nPlease DM this error message to @exx#9394:\n\n" .. tostring(err))
         ScreenguiS:Destroy()
         hookfunction(remoteEvent.FireServer, originalEvent)
         hookfunction(remoteFunction.InvokeServer, originalFunction)
