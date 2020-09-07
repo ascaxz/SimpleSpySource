@@ -840,7 +840,7 @@ function v2v(t)
         count = count + 1
     end
     if getnilrequired then
-        topstr = "function getNil(name,class) for _,v in pairs(getnilinstances())do if v.ClassName==class and v.Name==name then return v;end end end\n" .. topstr
+        topstr = "local getnilinstances = getnilinstances or get_nil_instances; function getNil(name,class) for _,v in pairs(getnilinstances())do if v.ClassName==class and v.Name==name then return v;end end end\n" .. topstr
     end
     if #topstr > 0 then
         ret = topstr .. "\n" .. ret
